@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Shop Floor Monitor</title>
+  <meta name="description" content="A state monitoring diagram." />
+  <meta charset="UTF-8">
+  <script src="go.js"></script>
+  <body>
+
+    <div id="myDiagramDiv" style="width:100%; height:500px; background-color: #EFE8F7;"></div>
+    <div id="popup" style="width:75%; height:400px; background-color:#b1adac; display: none;"></div>
+    <script id="code">
+        var $ = go.GraphObject.make;
+
+        var myDiagram =
+          $(go.Diagram, "myDiagramDiv",
+            {
+              initialContentAlignment: go.Spot.Center, 
+              "animationManager.isEnabled": false,
+              "undoManager.isEnabled": true, 
+            });
+
+        myDiagram.nodeTemplate =
+          $(go.Node, "Horizontal",
+            { background: "#DD9D98",locationObjectName: "ICON" },
+            new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
+            $(go.Picture,
+              { margin: 10, width: 50, height: 50},
+              new go.Binding("source")),
+            $(go.TextBlock, "Default Text",
+              { margin: 12, stroke: "black", font: "bold 16px sans-serif" },
+             new go.Binding("text", "name"))
+          );
+
+        myDiagram.linkTemplate =
+          $(go.Link,
+            { routing: go.Link.Orthogonal, corner: 5 },
+            $(go.Shape, { strokeWidth: 3, stroke: "#555" },
+                new go.Binding("stroke", "problem", linkProblemConverter)
+            )); 
+
+        myDiagram.groupTemplate =
+            $(go.Group, "Auto",
+                { layout: $(go.LayeredDigraphLayout,
+                    { direction: 0, columnSpacing: 10 }) },
+                { background: "#D792C3",locationObjectName: "ICON" },
+
+                $(go.Panel, "Vertical",  // position header above the subgraph
+                    { defaultAlignment: go.Spot.Center },
+                    $(go.Panel, "Horizontal",  
+                        $("SubGraphExpanderButton"),  // this Panel acts as a Button
+                        $(go.Picture, { source: "images/Optimized-home.jpg", margin: 10, width: 50, height: 50 }),
+                        $(go.TextBlock,     // group title near top, next to button
+                            { font: "Bold 12pt Sans-Serif" },
+                            new go.Binding("text", "key"))
+                    ),
+                   $(go.Placeholder,     // represents area for all member parts
+                        { padding: new go.Margin(0, 10), background: "#EFE8F7" })
+                )
+            );
+            
+        function linkProblemConverter(msg) {
+            if (msg) return "red";
+            return "gray";
+        }
+
+        var model = myDiagram.model
+        model.nodeDataArray =
+        [
+          { key: "1",name: "solarPanel",source: "images/Optimized-solarpanel.jpg","loc":"-500 -200" },
+          { key: "2",name: "sensor1",source: "images/Optimized-ammeter.jpg", "loc":"-170 -200" },
+          { key: "home",isGroup:true, name: "home",source: "images/Optimized-home.jpg", "loc":"170 150" },
+          { key: "4",name: "sensor2", source: "images/Optimized-ammeter.jpg", "loc":"-170 -70"},
+          { key: "5",name: "grid", source: "images/Optimized-bat.jpg", "loc":"105 -200" },
+          { key: "6",name:"fan1",source:"images/fan.jpeg","loc":"-70 50",group:"home"},
+          { key: "7",name:"bulb1",source:"images/bulb.jpg","loc":"-70 50",group:"home"},
+          { key: "8",name:"fan2",source:"images/fan.jpeg","loc":"-70 50",group:"home"},
+          { key: "9",name:"bulb2",source:"images/bulb.jpg","loc":"-70 250",group:"home"},
+          { key: "10",name:"Switch",source:"images/switch.jpg","loc":"-70 50",group:"home"},  
+        ];
+        model.linkDataArray = 
+        [
+            {from:"1", to:"2"},
+            {from:"2", to:"4"},
+            {from:"2", to:"5"},
+            {from:"4", to:"home"},
+            {from:"10", to:"7"},
+            {from:"10", to:"8"},
+            {from:"10", to:"9"},
+            {from:"10", to:"6"}
+        ]
+    </script>  
+</body>
+</html>
